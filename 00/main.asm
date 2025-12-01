@@ -58,15 +58,27 @@ _start:
 	je .sign_negate
 	cmp rax, 0x52		; if byte is 'R'
 	je .sign
+	cmp rax, 0x0a 		; if newline, skip 
+	je .skip_newline
+
+	jmp .err_close_fd
+
+.skip_newline:
+	inc r14 
+	jmp .process
 
 .parse_number:
-	inc r14				; jump past the sign
 	xor rcx, rcx		; use this to count the number
 
 .digit_loop:
 	movzx rax, byte [buffer + r14]
-	cmp rax, 10 		; '\n'
+	cmp rax, 0x0a 		; '\n'
 	je .apply_rotation	; if newline, done with reading the number
+
+	cmp rax, 0x30 		; if byte less than '0', invalid
+	jl .err_close_fd
+	cmp rax, 0x39 		; if byte greater than '9', invalid 
+	jg .err_close_fd
 
 	sub rax, '0' 		; a to i 
 	imul rcx, 10 		; rcx *= 10
@@ -105,9 +117,12 @@ _start:
 
 .sign_negate:
 	mov r15, -1
+	inc r14				; move past the number 
 	jmp .parse_number
+
 .sign:
 	mov r15, 1
+	inc r14				; move past the number 
 	jmp .parse_number	
 
 .done_reading:
