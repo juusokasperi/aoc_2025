@@ -5,7 +5,7 @@
 %define SYS_EXIT 	60
 
 section .bss
-	buffer: resb 65536	; for reading file into memory
+	buffer: resb 65536	; for read
 	num_buffer: resb 64 	; for number to string conversion
 
 section .text
@@ -80,8 +80,8 @@ _start:
 	cmp rax, 0x39 		; if byte greater than '9', invalid 
 	jg .err_close_fd
 
-	sub rax, '0' 		; a to i 
-	imul rcx, 10 		; rcx *= 10
+	sub rax, 0x30 		; a to i 
+	imul rcx, 0x0a 		; rcx *= 10
 	add rcx, rax 		; rcx += digit 
 
 	inc r14 
@@ -117,12 +117,12 @@ _start:
 
 .sign_negate:
 	mov r15, -1
-	inc r14				; move past the number 
+	inc r14				; move past the sign (L) 
 	jmp .parse_number
 
 .sign:
 	mov r15, 1
-	inc r14				; move past the number 
+	inc r14				; move past the sign (R)
 	jmp .parse_number	
 
 .done_reading:
@@ -132,12 +132,12 @@ _start:
 
 	mov rax, r12 
 	lea rsi, [num_buffer + 63] 	; build from end to start 
-	mov byte [rsi], 10
+	mov byte [rsi], 0x0a
 	dec rsi 
 
 	cmp rax, 0
 	jne .convert_loop 
-	mov byte [rsi], '0'
+	mov byte [rsi], 0x30		; '0'
 	dec rsi 
 	jmp .print_result
 
@@ -146,7 +146,7 @@ _start:
 	je .print_result 
 
 	xor rdx, rdx 
-	mov rcx, 10 
+	mov rcx, 0x0a 
 	div rcx 			; rax = rax / 10, rdx = remainder 
 	add dl, '0' 		; convert to ascii
 	mov [rsi], dl 		; store it 
