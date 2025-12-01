@@ -42,7 +42,7 @@ _start:
 
 	cmp rax, 0			; 0 == eof
 	je .done_reading
-	cmp rax, -1			; 1 == error
+	cmp rax, -1			; -1 == error
 	je .err_close_fd
 
 	mov r13, rax		; save amount of bytes read to r13
