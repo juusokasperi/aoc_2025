@@ -148,7 +148,7 @@ _start:
 	xor rdx, rdx 
 	mov rcx, 0x0a 
 	div rcx 			; rax = rax / 10, rdx = remainder 
-	add dl, '0' 		; convert to ascii
+	add dl, 0x30 		; convert to ascii
 	mov [rsi], dl 		; store it 
 	dec rsi 			; move ptr back
 	jmp .convert_loop 
