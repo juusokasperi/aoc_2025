@@ -63,24 +63,14 @@ _start:
 	sub rdx, r10 			; read BUFFER_SIZE - remaining bytes from last read 
 	syscall 
 
-	cmp rax, 0 
-	je .pop_and_exit_eof
-	cmp rax, -1
-	je .pop_and_exit_err
-	add r13, rax 
 	pop r8					; where to jmp to 
 	pop rcx 				; restore RCX (our accumulator)
+	cmp rax, 0 
+	je .done_reading
+	cmp rax, -1
+	je .err_close_fd
+	add r13, rax 
 	jmp r8
-
-.pop_and_exit_eof:
-	pop r8
-	pop rcx 
-	jmp .done_reading 
-
-.pop_and_exit_err:
-	pop r8 
-	pop rcx 
-	jmp .err_close_fd
 
 .process:
 	cmp r14, r13		; if we still have chars to read 
