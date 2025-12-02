@@ -3,31 +3,9 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-static inline bool is_silly_pattern(size_t n)
-{
-	size_t temp = n;
-	size_t digits = 0;
-	while (temp > 0)
-	{
-		temp /= 10;
-		digits++;
-	}
+#define DELIMITERS ",\n\r"
 
-	if (digits % 2 != 0)
-		return false;
-	
-	size_t half_len = digits / 2;
-	size_t divisor = 1;
-
-	for (size_t i = 0; i < half_len; ++i)
-		divisor *= 10;
-
-	size_t left_part = n / divisor;
-	size_t right_part = n % divisor;
-	return (left_part == right_part);
-}
-
-static inline char *read_file(const char *input_file)
+static char *read_file(const char *input_file)
 {
 	FILE* f = fopen(input_file, "r");
 	if (!f)
@@ -54,6 +32,53 @@ static inline char *read_file(const char *input_file)
 	return (buffer);
 }
 
+static inline size_t count_digits(size_t n)
+{
+	if (n == 0)
+		return (1);
+
+	size_t count = 0;
+	while (n > 0)
+	{
+		n /= 10;
+		count++;
+	}
+	return (count);
+}
+
+static inline size_t power_of_ten(size_t n)
+{
+	size_t result = 1;
+	for (size_t i = 0; i < n; ++i)
+		result *= 10;
+	return (result);
+}
+
+static inline size_t get_start_generator(size_t range_start)
+{
+	int digits = count_digits(range_start);
+
+	if (digits % 2 != 0)
+	{
+		int needed_digits = (digits + 1) / 2;
+		return power_of_ten(needed_digits - 1);
+	}
+	else
+		return range_start / power_of_ten(digits / 2);
+}
+
+static inline size_t make_silly(size_t n)
+{
+	size_t temp = n;
+	size_t multiplier = 1;
+	while (temp > 0)
+	{
+		multiplier *= 10;
+		temp /= 10;
+	}
+	return ((n * multiplier) + n);
+}
+
 int main(int argc, char **argv)
 {
 	if (argc != 2)
@@ -66,22 +91,32 @@ int main(int argc, char **argv)
 	if (!input_file)
 		return (1);
 	size_t sum = 0;
-	char *token = strtok(input_file, ",\n\r");
+	char *token = strtok(input_file, DELIMITERS);
 
 	while (token != NULL)
 	{
-		size_t start;
-		size_t end;
-
-		if (sscanf(token, "%zu-%zu", &start, &end) == 2)
+		char *dash_ptr;
+		size_t start = strtoul(token, &dash_ptr, 10);
+		if (*dash_ptr != '-')
 		{
-			for (size_t i = start; i <= end; ++i)
-			{
-				if (is_silly_pattern(i))
-					sum += i;
-			}
+			token = strtok(NULL, DELIMITERS);
+			continue;
 		}
-		token = strtok(NULL, ",\n\r");
+
+		size_t end = strtoul(dash_ptr + 1, NULL, 10);
+		size_t g_start = get_start_generator(start);
+		int max_digits = count_digits(end);
+		
+		for (size_t g = g_start; ; ++g)
+		{
+			size_t silly = make_silly(g);
+
+			if (count_digits(silly) > max_digits)
+				break;
+			if (silly >= start && silly <= end)
+				sum += silly;
+		}
+		token = strtok(NULL, DELIMITERS);
 	}
 	printf("Sum of invalid IDs: %zu\n", sum);
 	free(input_file);
