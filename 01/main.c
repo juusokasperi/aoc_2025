@@ -61,10 +61,10 @@ static inline size_t get_start_generator(size_t range_start)
 	if (digits % 2 != 0)
 	{
 		int needed_digits = (digits + 1) / 2;
-		return power_of_ten(needed_digits - 1);
+		return (power_of_ten(needed_digits - 1));
 	}
 	else
-		return range_start / power_of_ten(digits / 2);
+		return (range_start / power_of_ten(digits / 2));
 }
 
 static inline size_t make_silly(size_t n)
