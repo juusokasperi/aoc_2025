@@ -3,7 +3,6 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-
 static inline bool is_silly_pattern(size_t n)
 {
 	char buffer[128];
