@@ -106,11 +106,15 @@ int main(int argc, char **argv)
 		size_t end = strtoul(dash_ptr + 1, NULL, 10);
 		size_t g_start = get_start_generator(start);
 		int max_digits = count_digits(end);
+		size_t prev_silly = 0;
 		
 		for (size_t g = g_start; ; ++g)
 		{
 			size_t silly = make_silly(g);
 
+			if (silly < g || silly < prev_silly)
+				break;
+			prev_silly = silly;
 			if (count_digits(silly) > max_digits)
 				break;
 			if (silly >= start && silly <= end)
