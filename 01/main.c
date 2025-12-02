@@ -5,16 +5,26 @@
 
 static inline bool is_silly_pattern(size_t n)
 {
-	char buffer[128];
-	sprintf(buffer, "%zu", n);
-	size_t len = strlen(buffer);
-	if (len % 2 != 0)
+	size_t temp = n;
+	size_t digits = 0;
+	while (temp > 0)
+	{
+		temp /= 10;
+		digits++;
+	}
+
+	if (digits % 2 != 0)
 		return false;
 	
-	size_t half_len = len / 2;
-	if (strncmp(buffer, buffer + half_len, half_len) == 0)
-		return true;
-	return false;
+	size_t half_len = digits / 2;
+	size_t divisor = 1;
+
+	for (size_t i = 0; i < half_len; ++i)
+		divisor *= 10;
+
+	size_t left_part = n / divisor;
+	size_t right_part = n % divisor;
+	return (left_part == right_part);
 }
 
 static inline char *read_file(const char *input_file)
