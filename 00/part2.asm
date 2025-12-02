@@ -137,15 +137,21 @@ _start:
 	je .rotate_right 
 
 .rotate_left:
-	cmp rcx, rbp 
+	mov r9, rbp 
+	cmp r9, 0 
+	jne .check_threshold_left 
+	mov r9, 100 
+
+.check_threshold_left:
+	cmp rcx, r9 
 	jl .update_pos_left 
 
 	mov rax, rcx 
-	sub rax, rbp 
+	sub rax, r9  
 
 	xor rdx, rdx 
-	mov rbx, 100 
-	div rbx 
+	mov rdi, 100 
+	div rdi
 
 	inc rax
 	add r12, rax 
@@ -155,8 +161,8 @@ _start:
 	sub rax, rcx 
 
 	cqo 
-	mov rbx, 100 
-	idiv rbx 
+	mov rdi, 100 
+	idiv rdi 
 
 	mov rbp, rdx 
 	cmp rbp, 0 
@@ -169,8 +175,8 @@ _start:
 	add rax, rcx 
 
 	xor rdx, rdx 
-	mov rbx, 100 
-	div rbx 
+	mov rdi, 100 
+	div rdi
 
 	add r12, rax 
 	mov rbp, rdx 
