@@ -2,12 +2,14 @@
 %define SYS_READ	0
 %define SYS_OPEN 	2
 %define SYS_CLOSE 	3
-%define SYS_FSTAT	5
+%define SYS_FSTAT 	5
 %define SYS_LSEEK	8
 %define SYS_MMAP	9
 %define SYS_EXIT 	60
 %define STDOUT 		1
+
 %define SEEK_END 	2
+
 section .data
 
 section .bss
@@ -18,7 +20,7 @@ section .text
 
 _start:
 	pop rsi
-	cmp rsi, 2		; if argc != 2
+	cmp rsi, 2 
 	jne .exit_error
 	pop rdi 		; program name (discard)
 	pop rdi 		; input file 
@@ -105,6 +107,42 @@ _start:
 	inc r10 
 
 .scan_candidates:
+	mov rax, r10 
+	add rax, 31
+	cmp rax, rbx 
+	jg .scalar_fallback 
+	cmp rax, r14 
+	jg .scalar_fallback 
+
+	movzx eax, dl 
+	add eax, '0'
+	vmovd xmm1, eax
+	vpbroadcastb ymm1, xmm1 
+	
+	vmovdqu ymm0, [r10]
+	vpcmpgtb ymm2, ymm0, ymm1 
+
+	vpmovmskb eax, ymm2 
+
+	test eax, eax 
+	jz .skip_32_bytes
+
+	tzcnt eax, eax 
+	add r10, rax 
+
+	mov al, byte [r10]
+	sub al, '0'
+	movzx rdx, al
+	mov r11, r10
+
+	inc r10
+	jmp .scan_candidates
+
+.skip_32_bytes:
+	add r10, 32 
+	jmp .scan_candidates
+
+.scalar_fallback:
 	cmp r10, rbx 				; while r10 <= rbx 
 	jg .found_max_digit 		; if i > limit, done 
 
@@ -117,7 +155,7 @@ _start:
 
 .skip_update:
 	inc r10 
-	jmp .scan_candidates 
+	jmp .scalar_fallback 
 
 .found_max_digit:
 	imul r13, r13, 10 
@@ -183,5 +221,3 @@ _start:
 	mov rdi, 1 
 	syscall 
 
-
-	

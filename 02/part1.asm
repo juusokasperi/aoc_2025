@@ -2,15 +2,16 @@
 %define SYS_READ	0
 %define SYS_OPEN 	2
 %define SYS_CLOSE 	3
+%define SYS_LSEEK 	8
 %define SYS_FSTAT	5
 %define SYS_MMAP	9
 %define SYS_EXIT 	60
 %define STDOUT 		1
+%define SEEK_END 	2
 
 section .data
 
 section .bss
-	stat_buf resb 144			; buffer for fstat 
 	num_buffer resb 64
 
 section .text
@@ -33,14 +34,14 @@ _start:
 	js .exit_error 
 	mov r15, rax 	; save FD in r15
 
-	; -- Get file size (fstat)
-	mov rax, SYS_FSTAT
+	; -- Get file size (lseek
+	mov rax, SYS_LSEEK
 	mov rdi, r15
-	mov rsi, stat_buf 
+	mov rsi, 0
+	mov rdx, SEEK_END
 	syscall
 
-	; The file size is at offset 48 in the struct
-	mov r14, [stat_buf + 48]	; r14 = filesize
+	mov r14, rax	; r14 = filesize
 
 	; -- Map file to memory (mmap) --
 	mov rax, SYS_MMAP
@@ -57,6 +58,11 @@ _start:
 
 	mov rsi, rax 				; rsi = pointer to start of file data 
 	add r14, rsi 				; r14 = pointer to end of file bfr 
+
+	; --- Close file ---
+	mov rax, SYS_CLOSE
+	mov rdi, r15 
+	syscall 
 
 	; --- Puzzle logic ---
 	; rsi: Current character pointer 
@@ -121,10 +127,6 @@ _start:
 	add r12, r13 
 
 .done_reading:
-	mov rax, SYS_CLOSE 
-	mov rdi, r15 
-	syscall 
-
 	; r12 = total sum 
 	mov rax, r12
 	lea rsi, [num_buffer + 63]	; build from end to start
