@@ -15,4 +15,4 @@ part1           part2
 part2_simd      part2_optimized_simd
 ```
 
-`binary=(binary_to_build); nasm -f elf64 ${binary}.asm -o ${binary}.o && ld ${binary}.o -o ${binary}`
+`binary=(binary_to_build); nasm -f elf64 ${binary}.asm -o ${binary}.o && ld ${binary}.o -o ${binary} -static`
