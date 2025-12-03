@@ -68,57 +68,66 @@ _start:
 	cmp rsi, r14				; if at end 
 	jge .done_reading
 
-	xor r13, r13 				; maximum joltage for line 
-	mov r10, rsi 				; inner loop pointer (start of line)
+	; for part 2 we need to first find newline to calculate bounds
+	mov r8, rsi 
 
-.find_max_loop_outer:
-	mov al, byte [r10]			; move first char to al 
-	cmp al, 0x0a				; check for newline
-	je .line_done 
-	cmp r10, r14 				; check for eof 
-	jge .line_done_eof 
+.find_newline:
+	cmp r8, r14					; check eof 
+	jge .found_line_end 
+	cmp byte [r8], 0x0a 		; check nl 
+	je .found_line_end 
+	inc r8 
+	jmp .find_newline 
 
-	sub al, '0'					; convert outer digit to int 
-	movzx rdx, al				; rdx = first digit 
+.found_line_end:
+	; rsi = start of curr line 
+	; r8 = address of nl / eof for this line 
+	xor r13, r13 
+	mov rcx, 12 				; looking for 12 digits 
+	mov r9, rsi 				; search start pointer 
 
-	; Inner loop: check digits after r10 
-	mov r11, r10 
-	inc r11 
+.digit_search_loop:
+	mov rbx, r8 				; rbx = nl address 
+	sub rbx, rcx 				; rbx = last valid index (nl - 12)
 
-.find_max_loop_inner:
-	mov cl, byte [r11]
-	cmp cl, 0x0a 				; check nl 
-	je .next_outer_digit
-	cmp r11, r14 				; check eof 
-	jge .next_outer_digit 
+	xor rdx, rdx 				; rdx = best digit found so far 
+	mov r10, r9 				; r10 = iterator
+	mov r11, r9					; r11 = addr of best digit found 
 
-	sub cl, '0'
-	movzx rcx, cl 				; rcx = second digit 
-
-	; calculate joltage (first * 10) + second
-	mov rax, rdx 
-	imul rax, 10 
-	add rax, rcx 
-
-	cmp rax, r13 
-	cmovg r13, rax
-
-	inc r11 
-	jmp .find_max_loop_inner 
-
-.next_outer_digit:
+	mov al, byte [r10]
+	sub al, '0'
+	movzx rdx, al
 	inc r10 
-	jmp .find_max_loop_outer
 
-.line_done:
-	add r12, r13				; add line to total sum 
-	; Move rsi pointer to one character after r10 
-	; since r10 is now sitting on a newline 
-	lea rsi, [r10 + 1]
-	jmp .line_loop
+.scan_candidates:
+	cmp r10, rbx 				; while r10 <= rbx 
+	jg .found_max_digit 		; if i > limit, done 
 
-.line_done_eof:
-	add r12, r13 
+	mov al, byte [r10]
+	sub al, '0'
+	cmp al, dl 					; if new digit <= oldmax, don't upd 
+	jle .skip_update 
+	movzx rdx, al				; upd max value 
+	mov r11, r10 				; upd max addr 
+
+.skip_update:
+	inc r10 
+	jmp .scan_candidates 
+
+.found_max_digit:
+	imul r13, r13, 10 
+	add r13, rdx
+
+	mov r9, r11 				; upd search pointer 
+	inc r9
+
+	dec rcx 					; decrement digits needed ctr 
+	jnz .digit_search_loop 
+
+	add r12, r13 				; upd to total 
+
+	lea rsi, [r8 + 1]
+	jmp .line_loop 
 
 .done_reading:
 	mov rax, SYS_CLOSE 
