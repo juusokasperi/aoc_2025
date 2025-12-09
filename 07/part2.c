@@ -4,11 +4,12 @@
 #include <unistd.h>
 #include <stdio.h>
 
-void quicksort_edges(Edge *arr, int low, int high);
+void	quicksort_edges(Edge *arr, int low, int high);
 
-StringView sv_chop(StringView *sv, char delimiter)
+StringView	sv_chop(StringView *sv, char delimiter)
 {
-	StringView result = *sv;
+	StringView	result = *sv;
+
 	for (size_t i = 0; i < sv->len; ++i)
 	{
 		if (sv->data[i] == delimiter)
@@ -24,11 +25,11 @@ StringView sv_chop(StringView *sv, char delimiter)
 	return (result);
 }
 
-long long sv_to_int(StringView sv)
+long long	sv_to_int(StringView sv)
 {
-	unsigned long long result = 0;
-	long long sign = 1;
-	size_t i = 0;
+	unsigned long long	result = 0;
+	long long			sign = 1;
+	size_t				i = 0;
 
 	if (sv.len > 0 && sv.data[0] == '-')
 	{
@@ -45,17 +46,18 @@ long long sv_to_int(StringView sv)
 	return (result * sign);
 }
 
-int find_set(int *parent, int i)
+int	find_set(int *parent, int i)
 {
 	if (parent[i] == i)
 		return (i);
 	return (parent[i] = find_set(parent, parent[i]));
 }
 
-void unite(int *parent, int *size, int i, int j)
+void	unite(int *parent, int *size, int i, int j)
 {
-	int root_i = find_set(parent, i);
-	int root_j = find_set(parent, j);
+	int	root_i = find_set(parent, i);
+	int	root_j = find_set(parent, j);
+
 	if (root_i != root_j)
 	{
 		if (size[root_i] < size[root_j])
@@ -71,9 +73,10 @@ void unite(int *parent, int *size, int i, int j)
 	}
 }
 
-static int calculate_points(StringView *sv)
+static int	calculate_points(StringView *sv)
 {
-	int res = 0;
+	int	res = 0;
+
 	for (size_t i = 0; i < sv->len; ++i)
 	{
 		if (sv->data[i] == '\n')
@@ -86,7 +89,7 @@ static int calculate_points(StringView *sv)
 
 static Point* store_points(Arena *a, StringView *sv, int points_num)
 {
-	Point *points = arena_alloc(a, sizeof(Point) * points_num);
+	Point	*points = arena_alloc(a, sizeof(Point) * points_num);
 
 	for (int n = 0; sv->len > 0; ++n)
 	{
@@ -100,11 +103,11 @@ static Point* store_points(Arena *a, StringView *sv, int points_num)
 	return (points);
 }
 
-int main(void)
+int	main(void)
 {
-	Arena a;
-	a = arena_init(PROT_READ | PROT_WRITE);
+	Arena	a;
 
+	a = arena_init(PROT_READ | PROT_WRITE);
 	char *buffer = arena_alloc(&a, MEMARENA_DEFAULT_SIZE);
 	size_t bytes_read = read(0, buffer, MEMARENA_DEFAULT_SIZE);
 	StringView sv = { buffer, bytes_read };

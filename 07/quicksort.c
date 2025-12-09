@@ -3,7 +3,7 @@
 
 #define SWAP_EDGE(a,b) { Edge t = *(a); *(a) = *(b); *(b) = t; }
 
-static void insertion_sort_edges(Edge *arr, int low, int high)
+static void	insertion_sort_edges(Edge *arr, int low, int high)
 {
 	for (int i = low + 1; i <= high; ++i)
 	{
@@ -18,7 +18,7 @@ static void insertion_sort_edges(Edge *arr, int low, int high)
 	}
 }
 
-static void median_of_three(Edge *arr, int low, int high)
+static void	median_of_three(Edge *arr, int low, int high)
 {
 	int mid = low + (high - low) / 2;
 	if (arr[mid].dist_sq < arr[low].dist_sq)
@@ -30,7 +30,7 @@ static void median_of_three(Edge *arr, int low, int high)
 	SWAP_EDGE(&arr[mid], &arr[low]);
 }
 
-static int partition(Edge *arr, int low, int high)
+static int	partition(Edge *arr, int low, int high)
 {
 	median_of_three(arr, low, high);
 	long long pivot = arr[low].dist_sq;
@@ -45,7 +45,7 @@ static int partition(Edge *arr, int low, int high)
 	}
 }
 
-void quickselect_edges(Edge *arr, int low, int high, int k)
+void	quickselect_edges(Edge *arr, int low, int high, int k)
 {
 	while (low < high)
 	{
@@ -57,7 +57,7 @@ void quickselect_edges(Edge *arr, int low, int high, int k)
 	}
 }
 
-void quicksort_edges(Edge *arr, int low, int high)
+void	quicksort_edges(Edge *arr, int low, int high)
 {
 	while (low < high)
 	{
